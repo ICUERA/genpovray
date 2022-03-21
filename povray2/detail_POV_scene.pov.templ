@@ -1,0 +1,20 @@
+
+object{
+      detail{{ detail_num }}
+
+
+//            rotate <{{ roll }},0,0> //roll
+//	    rotate <0,{{ pitch }},0> //pitch
+//    	    rotate <0,0,{{ yaw }}> //yaw
+	    Matrix_Trans({{ A }}, {{ B }}, {{ C }}, {{ D }})
+
+            translate <{{ x_trans }},{{ y_trans }},{{ z_trans }}>
+
+
+      texture { pigment { color rgb <0.64,0.687,0.71>  }
+
+	        finish{F_MetalD}
+                normal  { agate 0.1 scale 0.1 }}
+
+      }
+

@@ -1,0 +1,82 @@
+//wrap the file with the version
+#local Temp_version = version;
+#version 3.7;
+
+ 
+global_settings {
+  //This setting is for alpha transparency to work properly.
+  //Increase by a small amount if transparent areas appear dark.
+   max_trace_level 15
+   adc_bailout 0.01
+   assumed_gamma 1
+   ambient_light rgb <1,1,1>*{{ ablight_factor }}
+ 
+}
+{{ geometry_include }}
+#include "metal_custom.inc"
+#include "colors.inc"
+#include "metals.inc"
+#include "transforms.inc"
+ 
+//CAMERA PoseRayCAMERA
+//CAMERA PoseRayCAMERA
+camera {
+        perspective
+        right -x*image_width/image_height
+        location <{{ camtransx }},{{ camtransy }},{{ camtransz }}>
+        look_at 0
+        rotate <{{ camroll }},0,0>
+        rotate <0,{{ campitch }},0>
+        rotate <0,0,{{ camyaw }}>
+
+        }
+
+ 
+//PoseRay default Light attached to the camera
+light_source {
+              <0,0,700> //light position
+              color rgb <1,1,1>*1.7
+              rotate <{{ lroll }},0,0> //roll
+              rotate <0,{{ lpitch }} ,0> //pitch
+              rotate <0,0,{{ lyaw }}> //yaw
+             }
+
+
+//background lighting
+light_source {
+              <0,0,2000> //light position
+              color rgb <0.4,0.4,0.3>
+              rotate <75,0,0> //roll
+              rotate <0,0,0> //pitch
+              rotate <0,0,0> //yaw
+             }
+
+light_source {
+              <0,0,2000> //light position
+              color rgb <0.4,0.4,0.3>
+              rotate <-75,0,0> //roll
+              rotate <0,0,0> //pitch
+              rotate <0,0,0> //yaw
+             }
+
+
+light_source {
+              <0,0,2000> //light position
+              color rgb <0.4,0.4,0.3>
+              rotate <0,0,0> //roll
+              rotate <0,75,0> //pitch
+              rotate <0,0,0> //yaw
+             }
+
+light_source {
+              <0,0,2000> //light position
+              color rgb <0.4,0.4,0.3>
+              rotate <0,0,0> //roll
+              rotate <0,-75,0> //pitch
+              rotate <0,0,0> //yaw
+             }
+
+
+//Background
+background { color srgbt <0,0,0,1>  }
+
