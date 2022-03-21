@@ -5,14 +5,14 @@
 # для набора объектов из obj мешей
 # неокрашенные металлические объекты ( оцинковка )
 
-# the tool for synthetic coco-style database generation
+# The tool for synthetic coco-style database generation
 # zincum _style metal details
 # NSTU Novosibirsk Russia
 # @Authors: Alex Kolker (a.kolker@corp.nstu.ru) and Sonya Oshepkova
 # Novosibirsk 2020
-#The tool was created with support of RFBR 18-58-76003 project ( ERA.Net RUS Plus st2017-294 EU project)
-#The licence limitations: CC BY-NC 4.0 license
-#@AUTHORS Alex Kolker; Zhanna Pershina; Sonya Oshepkova @NSTU Novosibirsk 2020 @If you were used it please cite us.
+# The tool was created with support of RFBR 18-58-76003 project ( ERA.Net RUS Plus st2017-294 EU project)
+# The licence limitations: CC BY-NC 4.0 license
+# @AUTHORS Alex Kolker; Zhanna Pershina; Sonya Oshepkova @NSTU Novosibirsk 2020 @If you were used it please cite us.
 
 
 import configparser
@@ -29,7 +29,7 @@ import numpy as np
 from jinja2 import Template
 
 # позиции источника света
-# the light source
+# the light source positions
 # light_pos = [[0, 0, 0], [0, -20, 0], [0, 20, 0], [-20, -20, 0], [20, 20, 0]]
 light_pos = []
 # стопка будет определятся порядком- последний - самый верхний
@@ -209,13 +209,18 @@ def main():
     light_pos = json.loads(str(config['DEFAULT']['LIGHT']))
     GlobalScale = float(config['DEFAULT']['SCALE'])
 
-    np.random.seed()
+    np.random.seed(1)
 
     details_coordset = []
 
-    details_coordset.append(([0, 0, 0, 220, 140, -120]))
-    details_coordset.append(([0, 0, 0, -220, -110, -120]))
-    details_coordset.append(([0, 0, 0, 0, 0, -120]))
+    for idx in range(0, len(detail_nameset)):
+        details_coordset.append([0, 0, 0, 0, 0, 0])
+
+    # This is for current set of details only. Only 3 details supported
+    if overlap == 0:
+        details_coordset.append(([0, 0, 0, 220, 140, -120]))
+        details_coordset.append(([0, 0, 0, -220, -110, -120]))
+        details_coordset.append(([0, 0, 0, 0, 0, -120]))
 
     # тут bbox деталей, чтобы при рандомизации не попасть на прекрытия
     # bound boxes for avoid overlapping
@@ -242,7 +247,7 @@ def main():
         templ3 = open('./povray2/aruco.pov.templ').read()
         templaruco = Template(templ3)
     # отрендерели шаблоны
-    # teplate processing
+    # template processing
     templatecommon = Template(templ1)
     templatedetail = Template(templ2)
 
@@ -266,7 +271,7 @@ def main():
         lyaw = 0
 
         # тут будут храниться контуры,которые мы наработали для сцены
-        # array for conturs for annotation
+        # array for contours for annotation
         detailcontours = []
         # и маски*
         # and masks ( for future using )
@@ -298,7 +303,7 @@ def main():
 
         #  Собираем детали по отдельности масками и пишем их с именами с 0 до len()
         #  Индивидуальный признак для возможности параллельного запуска нескольких задач
-        # detail image mask generation
+        # detailed  image mask generation
 
         indidx = ""
         for detailnum in range(0, len(detail_nameset)):
@@ -330,7 +335,7 @@ def main():
 
             # контуры отдельных деталей не меняются в зависимости от направления освещения,поэтому мы отрисовываем их по
             # отдельности и рассчитываем контуры для coco датасета
-            # detail conturs are same for all light position, we can do in once for each set
+            # detail contours are same for all light position, we can do in once for each set
             runstring = 'detail{}_POV_scene.pov +H704 +W704 +O../result/{}.png Display=off Quality=5'.format(detailnum,
                                                                                                              detailnum)
             subprocess.call(["povray", runstring], cwd='./povray2')
@@ -368,8 +373,6 @@ def main():
                 img = cv2.drawContours(img, contours, -1, (0, 255, 0), 3)
                 print(np.asarray(contours).shape)
                 cv2.imwrite("./result/{}_contours.png".format(detailnum), img)
-                # detail boxes for correct bbox and for mask  in future
-
                 treshset.append(thresh_)
 
             else:
@@ -377,7 +380,7 @@ def main():
                 treshset.append([])
 
         # цикл по позициям источника освещения
-        # each light source processing
+        # loop for each light source processing
         for lroll, lpitch, lyaw in light_pos:
             ccolorgray = 'White*0.05'
             # сборщик света и камеры
@@ -398,8 +401,6 @@ def main():
                 roll, pitch, yaw, x_trans, y_trans, z_trans = details_coordset[detailnum]
                 matrix = make_transform(roll / 180. * np.pi, pitch / 180. * np.pi, yaw / 180. * np.pi)
                 np.savetxt("./result/images/" + outname + str(detail_nameset[detailnum][1]) + ".txt", matrix)
-                #                open("./result/images/"+outname+str(detail_nameset[detailnum])+".txt",mode='w').write(matrix)
-
                 open(heapname, mode='a').write(
                     templatedetail.render(A=np2pov(matrix[0]), B=np2pov(matrix[1]),
                                           C=np2pov(matrix[2]), D=np2pov(matrix[3]),
@@ -411,25 +412,15 @@ def main():
                                           ablight_factor=0, detail_num=detailnum))
             if aruco == 1:
                 # сборка аруки
+                # aruco if need
                 open(heapname, mode='a').write(
                     templaruco.render())
             # отрисовка кучи деталей
-            # all bodyes
+            # all bodies
             subprocess.call(["povray",
                              "heap_POV_scene.pov +H704 +W704 +O../result/images/result.png Display=off Quality=9 Output_Alpha=True"],
                             cwd='./povray2')
-            # случайный фон
-            # random background - commented
-            #            img = np.random.randint(0,255,(704,704,3)).astype(np.uint8)
-            #            kernel = np.ones((3,3),np.float32)/9.
-            #            dst = cv2.filter2D(img,-1,kernel)
-            #            cv2.imwrite("./result/images/random.png",dst)
-            #            result = cv2.imread("./result/images/result.png")
-            #            st = cv2.add(result,dst)
-            #            cv2.imwrite(outname, dst)
-            # объединение случайного фона
-            # random background
-            #            str_call = "./result.images/random.png ./result/images/result.png -background black -gravity center -flatten "+outname
+
             os.rename("./result/images/result.png", "./result/images/{}".format(outname))
 
         # Аннотируем картинку
@@ -470,9 +461,6 @@ def main():
                     json.dump(annot_ex, f)
         collect_final()
 
-
-#        for file in glob.glob('./result/*.png'):
-#            os.remove(file)
 
 if __name__ == "__main__":
     main()

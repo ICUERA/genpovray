@@ -1,6 +1,6 @@
 The tool was created with support of RFBR 18-58-76003 project ( ERA.Net RUS Plus st2017-294 EU project)
 
-The licence limitations: CC BY-NC 4.0 license
+The license limitations: CC BY-NC 4.0 license
 
 @AUTHORS Alex Kolker; Zhanna Pershina; Sonya Oshepkova  and others. @NSTU Novosibirsk 2020 
 
